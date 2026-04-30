@@ -10,7 +10,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState('30ML');
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart(); 
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -38,15 +38,13 @@ const ProductDetails = () => {
   if (!product) return <div className="p-10 text-center font-bold">Produit introuvable</div>;
 
   const handleAddToCart = () => {
-    // L'alerte SweetAlert "Ajouté !" est déjà gérée à l'intérieur de addToCart (CartContext)
     addToCart(product, selectedSize, quantity);
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 md:p-12 flex flex-col md:flex-row gap-12 bg-white">
-      {/* Image Section */}
+    <div className="max-w-7xl mx-auto p-4 md:p-12 flex flex-col md:flex-row gap-8 md:gap-16 bg-white min-h-screen">
       <div className="w-full md:w-1/2">
-        <div className="aspect-[4/5] bg-gray-50 rounded-2xl overflow-hidden shadow-sm">
+        <div className="aspect-[4/5] bg-gray-50 rounded-sm overflow-hidden shadow-sm">
           <img 
             src={product.imageUrl || product.image || 'https://via.placeholder.com/600'} 
             alt={product.name} 
@@ -56,37 +54,35 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      {/* Info Section */}
-      <div className="w-full md:w-1/2 space-y-8 py-2">
+      <div className="w-full md:w-1/2 space-y-6 md:space-y-8 flex flex-col justify-center">
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-[0.3em] mb-2">{product.category || "Parfum"}</p>
-          <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter text-gray-900">
+          <p className="text-[10px] text-gray-400 uppercase tracking-[0.4em] mb-3">{product.category || "Parfum"}</p>
+          <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-gray-900 leading-none">
             {product.name}
           </h1>
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-6 flex items-baseline gap-4">
             <span className="text-3xl font-bold text-red-600">{product.price} DH</span>
             {product.oldPrice && (
-              <span className="text-xl text-gray-400 line-through">{product.oldPrice} DH</span>
+              <span className="text-lg text-gray-400 line-through font-medium">{product.oldPrice} DH</span>
             )}
           </div>
         </div>
 
-        <p className="text-gray-600 leading-relaxed text-lg">
+        <p className="text-gray-600 leading-relaxed text-base md:text-lg border-l-2 border-gray-100 pl-4">
           {product.description || "Une fragrance exceptionnelle de la collection Sahaba Parfum 306."}
         </p>
 
-        {/* Size Selection */}
         <div className="space-y-4">
-          <p className="text-sm font-bold uppercase tracking-widest">Choisir le volume:</p>
-          <div className="flex gap-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-gray-900">Format:</p>
+          <div className="grid grid-cols-2 gap-3">
             {['30ML', '25ML'].map((size) => (
               <button
                 key={size}
                 onClick={() => setSelectedSize(size)}
-                className={`flex-1 py-4 border-2 font-black transition-all duration-300 ${
+                className={`py-4 rounded-none text-xs font-black transition-all duration-300 border-2 ${
                   selectedSize === size 
-                    ? 'bg-black text-white border-black' 
-                    : 'bg-white text-black border-gray-200 hover:border-black'
+                    ? 'bg-black text-white border-black shadow-lg shadow-black/10' 
+                    : 'bg-white text-black border-gray-100 hover:border-black'
                 }`}
               >
                 {size}
@@ -95,26 +91,37 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        {/* Quantity and CTA */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-          <div className="flex items-center border-2 border-black h-14 w-full sm:w-auto">
+        <div className="space-y-4 pt-4">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between bg-gray-50 rounded-none p-1 h-14 w-full border border-gray-200">
+              <button 
+                onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                className="w-12 h-full flex items-center justify-center hover:bg-white transition-all font-bold text-xl rounded-none"
+              >-</button>
+              <span className="font-black text-sm uppercase tracking-widest">Qté: {quantity}</span>
+              <button 
+                onClick={() => setQuantity(quantity + 1)} 
+                className="w-12 h-full flex items-center justify-center hover:bg-white transition-all font-bold text-xl rounded-none"
+              >+</button>
+            </div>
+            
             <button 
-              onClick={() => setQuantity(Math.max(1, quantity - 1))} 
-              className="px-6 h-full hover:bg-gray-100 transition font-bold"
-            >-</button>
-            <span className="px-6 font-bold text-lg w-12 text-center">{quantity}</span>
-            <button 
-              onClick={() => setQuantity(quantity + 1)} 
-              className="px-6 h-full hover:bg-gray-100 transition font-bold"
-            >+</button>
+              onClick={handleAddToCart}
+              className="w-full bg-black text-white h-16 rounded-none font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-all active:scale-[0.98] shadow-xl shadow-black/5 flex items-center justify-center gap-3"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              Ajouter au panier
+            </button>
           </div>
-          
-          <button 
-            onClick={handleAddToCart}
-            className="flex-1 bg-black text-white h-14 w-full px-8 rounded-none font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all duration-300 shadow-lg"
-          >
-            Ajouter au panier
-          </button>
+        </div>
+
+        <div className="pt-4 border-t border-gray-50 flex items-center gap-4 text-gray-400">
+           <div className="w-10 h-10 bg-gray-50 flex items-center justify-center">
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+           </div>
+           <p className="text-[10px] font-bold uppercase tracking-widest">En stock - Livraison rapide 40 DH</p>
         </div>
       </div>
     </div>
