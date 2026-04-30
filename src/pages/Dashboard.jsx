@@ -12,17 +12,13 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [whatsappPhone, setWhatsappPhone] = useState("");
-  const productsPerPage = 16;
+  const productsPerPage = 14; 
   const stockRef = useRef(null);
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ 
-    name: '', 
-    price30: '', oldPrice30: '',
-    price25: '', oldPrice25: '',
-    category: 'Femme', 
-    stock30: '0', stock25: '0', 
-    imageURL: '', description: '' 
+    name: '', price30: '', oldPrice30: '', price25: '', oldPrice25: '',
+    category: 'Femme', stock30: '0', stock25: '0', imageURL: '', description: '' 
   });
 
   useEffect(() => {
@@ -41,8 +37,14 @@ const Dashboard = () => {
   const handleUpdateWhatsApp = async () => {
     try {
       await setDoc(doc(db, "settings", "whatsapp"), { phone: whatsappPhone });
-      Swal.fire({ title: 'Succès', text: 'WhatsApp mis à jour !', icon: 'success', timer: 1500 });
-    } catch (err) { Swal.fire('Erreur', 'Erreur.', 'error'); }
+      Swal.fire({ 
+        title: 'Succès', 
+        text: 'WhatsApp mis à jour !', 
+        icon: 'success', 
+        timer: 1500,
+        confirmButtonColor: '#000000'
+      });
+    } catch (err) { Swal.fire({ title: 'Erreur', icon: 'error', confirmButtonColor: '#000000' }); }
   };
 
   const fetchProducts = async () => {
@@ -57,8 +59,11 @@ const Dashboard = () => {
       title: 'Déconnexion',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Oui',
-      confirmButtonColor: '#000'
+      confirmButtonText: 'Oui, Sortir',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#000000',
+      cancelButtonColor: '#d33',
+      buttonsStyling: true
     });
     if (result.isConfirmed) {
       await signOut(auth);
@@ -87,15 +92,15 @@ const Dashboard = () => {
     try {
       if (editingId) {
         await updateDoc(doc(db, "products", editingId), productData);
-        Swal.fire({ title: 'Modifié', icon: 'success', timer: 1500 });
+        Swal.fire({ title: 'Modifié', icon: 'success', timer: 1500, confirmButtonColor: '#000000' });
       } else {
         await addDoc(collection(db, "products"), { ...productData, createdAt: serverTimestamp() });
-        Swal.fire({ title: 'Ajouté', icon: 'success', timer: 1500 });
+        Swal.fire({ title: 'Ajouté', icon: 'success', timer: 1500, confirmButtonColor: '#000000' });
       }
       resetForm(); 
       fetchProducts();
     } catch (error) { 
-      Swal.fire('Erreur', error.message, 'error'); 
+      Swal.fire({ title: 'Erreur', text: error.message, icon: 'error', confirmButtonColor: '#000000' }); 
     } finally { 
       setLoading(false); 
     }
@@ -103,8 +108,8 @@ const Dashboard = () => {
 
   const resetForm = () => {
     setForm({ 
-        name: '', price30: '', oldPrice30: '', price25: '', oldPrice25: '', 
-        category: 'Femme', stock30: '0', stock25: '0', imageURL: '', description: '' 
+      name: '', price30: '', oldPrice30: '', price25: '', oldPrice25: '', 
+      category: 'Femme', stock30: '0', stock25: '0', imageURL: '', description: '' 
     });
     setEditingId(null);
   };
@@ -127,7 +132,16 @@ const Dashboard = () => {
   };
 
   const deleteProduct = async (id) => {
-    const result = await Swal.fire({ title: 'Supprimer ?', icon: 'warning', showCancelButton: true });
+    const result = await Swal.fire({ 
+        title: 'Supprimer ?', 
+        icon: 'warning', 
+        showCancelButton: true,
+        confirmButtonColor: '#000000',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'SUPPRIMER',
+        cancelButtonText: 'ANNULER',
+        buttonsStyling: true
+    });
     if (result.isConfirmed) { 
       await deleteDoc(doc(db, "products", id)); 
       fetchProducts(); 
@@ -135,12 +149,36 @@ const Dashboard = () => {
   };
 
   const filteredProducts = products.filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const currentItems = filteredProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
 
   return (
     <div className="p-2 md:p-8 bg-gray-50 min-h-screen font-sans">
+      {/* Had l-CSS ghadi i-fixi l-visibility dial les buttons nishan */}
+      <style>{`
+        .swal2-actions {
+          margin-top: 20px !important;
+        }
+        .swal2-confirm {
+          background-color: #000000 !important;
+          color: white !important;
+          opacity: 1 !important;
+          box-shadow: none !important;
+        }
+        .swal2-cancel {
+          background-color: #d33 !important;
+          color: white !important;
+          opacity: 1 !important;
+          box-shadow: none !important;
+        }
+        .swal2-styled:focus {
+          box-shadow: none !important;
+        }
+      `}</style>
+
       <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
         
+        {/* Sticky Header */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-2 z-50 gap-4">
            <div className="flex items-center justify-between w-full md:w-auto gap-4">
              <h1 className="font-black uppercase italic text-xs md:text-sm tracking-tighter text-black">Admin Sahaba 306</h1>
@@ -159,12 +197,12 @@ const Dashboard = () => {
            </div>
         </div>
 
+        {/* Form Section */}
         <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
           <h2 className="text-[10px] md:text-xs font-black mb-6 uppercase tracking-widest text-center md:text-left">
             {editingId ? '📝 Modifier Produit' : '✨ Nouveau Produit'}
           </h2>
           <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
                 <label className="text-[9px] font-black uppercase text-gray-400 block mb-1">Nom du Parfum</label>
@@ -207,10 +245,10 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-1">
-                <label className="text-[9px] font-black uppercase text-gray-400 block mb-1">Cloudinary URL</label>
+                <label className="text-[9px] font-black uppercase text-gray-400 block mb-1">Image URL</label>
                 <input type="text" className="w-full border rounded-lg p-3 text-sm outline-none" required value={form.imageURL} onChange={e => setForm({...form, imageURL: e.target.value})} />
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:col-span-2">
+              <div className="grid grid-cols-2 gap-3 md:col-span-2">
                 <div>
                   <label className="text-[9px] font-black uppercase text-gray-400 block mb-1">Stock 30ml</label>
                   <input type="text" className="w-full border rounded-lg p-3 text-sm outline-none" value={form.stock30} onChange={e => setForm({...form, stock30: e.target.value})} />
@@ -222,24 +260,25 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full bg-black text-white rounded-xl py-4 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all shadow-lg shadow-black/5">
+            <button type="submit" disabled={loading} className="w-full bg-black text-white rounded-xl py-4 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all shadow-lg">
               {loading ? 'SABR...' : (editingId ? 'Mettre à jour' : 'Ajouter au Stock')}
             </button>
-            {editingId && <button type="button" onClick={resetForm} className="w-full text-[9px] font-black uppercase text-gray-400 py-1">Annuler la modification</button>}
+            {editingId && <button type="button" onClick={resetForm} className="w-full text-[9px] font-black uppercase text-gray-400 py-1 underline">Annuler la modification</button>}
           </form>
         </div>
 
+        {/* Table/Stock Section */}
         <div ref={stockRef} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
            <div className="p-4 border-b bg-white">
              <input 
                type="text" 
                placeholder="Rechercher par nom..." 
                className="w-full bg-gray-50 border rounded-lg p-3 text-xs outline-none focus:bg-white transition-all"
-               onChange={(e) => setSearchTerm(e.target.value)}
+               onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
              />
            </div>
 
-           <div className="hidden md:block">
+           <div className="hidden md:block overflow-x-auto">
              <table className="w-full text-left">
                 <thead className="bg-gray-50 text-[9px] font-black text-gray-400 uppercase border-b">
                   <tr>
@@ -249,23 +288,23 @@ const Dashboard = () => {
                     <th className="p-4 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 text-xs">
                   {currentItems.map(p => (
                     <tr key={p.id} className="hover:bg-gray-50/50">
                       <td className="p-4 flex items-center gap-3">
                         <img src={p.imageUrl || p.image} className="w-10 h-12 object-cover rounded shadow-sm bg-gray-100" alt="" />
                         <div>
-                          <p className="font-bold text-xs uppercase text-black">{p.name}</p>
+                          <p className="font-bold uppercase text-black">{p.name}</p>
                           <p className="text-[8px] font-black text-gray-300 italic">{p.category}</p>
                         </div>
                       </td>
                       <td className="p-4 text-center">
                         <div className="flex flex-col gap-1 text-[9px]">
-                          <span className="font-bold whitespace-nowrap">30ml: {p.price30}DH / <span className="text-red-400">{p.oldPrice30 || '--'}</span></span>
-                          <span className="font-bold whitespace-nowrap">25ml: {p.price25}DH / <span className="text-red-400">{p.oldPrice25 || '--'}</span></span>
+                          <span className="font-bold">30ml: {p.price30}DH / <span className="text-red-400 line-through">{p.oldPrice30 || '--'}</span></span>
+                          <span className="font-bold">25ml: {p.price25}DH / <span className="text-red-400 line-through">{p.oldPrice25 || '--'}</span></span>
                         </div>
                       </td>
-                      <td className="p-4 text-center text-[10px] font-bold">
+                      <td className="p-4 text-center font-bold">
                         <div className="flex justify-center gap-2">
                           <span className={p.stock25 < 5 ? 'text-red-500' : 'text-gray-600'}>25ml: {p.stock25}</span>
                           <span className="text-gray-200">|</span>
@@ -286,35 +325,43 @@ const Dashboard = () => {
               {currentItems.map(p => (
                 <div key={p.id} className="p-4 space-y-3">
                   <div className="flex items-center gap-4">
-                    <img src={p.imageUrl || p.image} className="w-16 h-20 object-cover rounded-lg shadow-sm" alt="" />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
+                    <img src={p.imageUrl || p.image} className="w-16 h-20 object-cover rounded-lg" alt="" />
+                    <div className="flex-1 flex justify-between items-start">
                         <div>
                           <p className="font-black text-xs uppercase text-black">{p.name}</p>
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{p.category}</p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase">{p.category}</p>
                         </div>
                         <div className="flex flex-col gap-2">
                           <button onClick={() => startEdit(p)} className="text-[10px] font-black text-blue-500 uppercase">Editer</button>
                           <button onClick={() => deleteProduct(p.id)} className="text-[10px] font-black text-red-400 uppercase">Supprimer</button>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 bg-gray-50 p-2 rounded-lg">
-                    <div className="text-[9px]">
-                      <p className="font-black text-gray-400 uppercase">Formats & Prix</p>
-                      <p className="font-bold">30ml: {p.price30}DH <span className="text-red-400 line-through text-[8px]">{p.oldPrice30}</span></p>
-                      <p className="font-bold">25ml: {p.price25}DH <span className="text-red-400 line-through text-[8px]">{p.oldPrice25}</span></p>
-                    </div>
-                    <div className="text-[9px] text-right">
-                      <p className="font-black text-gray-400 uppercase">Stock Dispo</p>
-                      <p className={`font-bold ${p.stock30 < 5 ? 'text-red-600' : ''}`}>30ml: {p.stock30}</p>
-                      <p className={`font-bold ${p.stock25 < 5 ? 'text-red-600' : ''}`}>25ml: {p.stock25}</p>
                     </div>
                   </div>
                 </div>
               ))}
            </div>
+
+           {totalPages > 1 && (
+             <div className="p-4 bg-gray-50 flex justify-between items-center border-t border-gray-100">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className="text-[10px] font-black uppercase border-2 border-black px-4 py-2 bg-white disabled:opacity-20 disabled:border-gray-200"
+                >
+                  Précédent
+                </button>
+                <span className="text-[10px] font-black uppercase tracking-widest text-black bg-white px-4 py-2 border-y-2 border-black">
+                  Page {currentPage} / {totalPages}
+                </span>
+                <button 
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="text-[10px] font-black uppercase border-2 border-black px-4 py-2 bg-white disabled:opacity-20 disabled:border-gray-200"
+                >
+                  Suivant
+                </button>
+             </div>
+           )}
         </div>
       </div>
     </div>
