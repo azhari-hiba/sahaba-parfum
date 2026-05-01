@@ -7,10 +7,10 @@ import Swal from 'sweetalert2';
 const Cart = () => {
   const { cartItems, clearCart, removeFromCart } = useCart();
   const [adminPhone, setAdminPhone] = useState("");
-  const [client, setClient] = useState({ nom: '', ville: '', adresse: '', tele: '' });
+  const [client, setClient] = useState({ nom: '', villeSelect: 'Safi', villeAutre: '', adresse: '', tele: '' });
 
+  const delivery = client.villeSelect === 'Safi' ? 0 : 40;
   const total = cartItems?.reduce((acc, item) => acc + (item.price * item.quantity), 0) || 0;
-  const delivery = 40; // Prix de livraison fixe
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -36,12 +36,14 @@ const Cart = () => {
       return;
     }
 
+    const finalVille = client.villeSelect === 'Safi' ? 'Safi' : client.villeAutre;
+
     let message = `*SAHABA PARFUM 306 - NOUVELLE COMMANDE*\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
     message += `👤 *CLIENT*\n`;
     message += `• *Nom:* ${client.nom}\n`;
     message += `• *Télé:* ${client.tele}\n`;
-    message += `• *Ville:* ${client.ville}\n`;
+    message += `• *Ville:* ${finalVille}\n`;
     message += `• *Adresse:* ${client.adresse}\n\n`;
     
     message += `📦 *PRODUITS*\n`;
@@ -53,7 +55,7 @@ const Cart = () => {
     message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
     message += `💰 *DÉTAILS DU PAIEMENT*\n`;
     message += `• Sous-total: ${total} DH\n`;
-    message += `• Frais de livraison: ${delivery} DH\n`;
+    message += `• Frais de livraison: ${delivery === 0 ? 'GRATUIT' : delivery + ' DH'}\n`;
     message += `• *TOTAL À PAYER: ${total + delivery} DH*\n\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n`;
     message += `_Commande envoyée depuis le site web._`;
@@ -97,7 +99,6 @@ const Cart = () => {
                       <p className="text-[10px] text-gray-400 font-bold uppercase">{item.size} • Qté: {item.quantity}</p>
                       <p className="font-bold text-sm mt-1">{item.price} DH</p>
                     </div>
-                    {/* Utilisation de la fonction removeFromCart qui inclut déjà SweetAlert dans le Context */}
                     <button 
                       onClick={() => removeFromCart(item.id, item.size, item.name)} 
                       className="text-gray-300 hover:text-red-500 transition-colors"
@@ -117,7 +118,7 @@ const Cart = () => {
                 </div>
                 <div className="flex justify-between text-[10px] font-bold uppercase text-green-600">
                   <span>Livraison</span>
-                  <span>{delivery} DH</span>
+                  <span>{delivery === 0 ? 'Gratuit' : `${delivery} DH`}</span>
                 </div>
                 <div className="flex justify-between text-xl font-black pt-2">
                   <span>TOTAL</span>
@@ -143,8 +144,29 @@ const Cart = () => {
 
             <div>
               <label className="text-[9px] font-black uppercase text-gray-400 tracking-widest ml-1">Ville</label>
-              <input type="text" className="w-full p-3 mt-1 border rounded-lg text-sm focus:border-black outline-none transition-all bg-gray-50" required onChange={(e) => setClient({...client, ville: e.target.value})} />
+              <select 
+                className="w-full p-3 mt-1 border rounded-lg text-sm focus:border-black outline-none transition-all bg-gray-50" 
+                value={client.villeSelect}
+                required
+                onChange={(e) => setClient({...client, villeSelect: e.target.value})}
+              >
+                <option value="Safi">Safi (Livraison Gratuite)</option>
+                <option value="Autre">Autre Ville (+40 DH)</option>
+              </select>
             </div>
+
+            {client.villeSelect === 'Autre' && (
+              <div className="animate-fade-in">
+                <label className="text-[9px] font-black uppercase text-gray-400 tracking-widest ml-1">Précisez votre ville</label>
+                <input 
+                  type="text" 
+                  className="w-full p-3 mt-1 border rounded-lg text-sm focus:border-black outline-none transition-all bg-gray-50 border-blue-100" 
+                  required 
+                  placeholder="Ex: Casablanca, Marrakech..."
+                  onChange={(e) => setClient({...client, villeAutre: e.target.value})} 
+                />
+              </div>
+            )}
 
             <div>
               <label className="text-[9px] font-black uppercase text-gray-400 tracking-widest ml-1">Adresse Complète</label>

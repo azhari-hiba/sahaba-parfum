@@ -161,6 +161,7 @@ const ProductDetails = () => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth="2.5"/></svg>
               </div>
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">Livraison 40 DH</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">✅Gratuite sur Safi</p>
            </div>
         </div>
       </div>
