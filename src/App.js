@@ -12,6 +12,7 @@ import Homme from './pages/Homme';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login'; 
+import AboutUs from './pages/About';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutUs />} />
           <Route path="/femme" element={<Femme />} />
           <Route path="/homme" element={<Homme />} />
           <Route path="/cart" element={<Cart />} />
